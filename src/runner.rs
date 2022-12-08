@@ -4,8 +4,6 @@ use std::{
     time::{self, Duration},
 };
 
-use crate::day1;
-
 pub trait Day {
     fn part_1(_input: &str) -> anyhow::Result<String> {
         unimplemented!("part 1 of this day has not been implemented")
@@ -55,12 +53,13 @@ pub struct AdventOfCodeRunner {
 impl AdventOfCodeRunner {
     pub fn run(mut self) -> anyhow::Result<()> {
         if self.day.len() == 0 {
-            self.day = vec![1]
+            self.day = vec![1, 2]
         }
 
         for day in &self.day {
             match day {
-                1 => self.execute::<day1::Day1>(*day)?,
+                1 => self.execute::<crate::day1::Day1>(*day)?,
+                2 => self.execute::<crate::day2::Day2>(*day)?,
                 n => panic!("Day not yet implemented: {}", n),
             };
         }
