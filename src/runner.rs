@@ -53,13 +53,14 @@ pub struct AdventOfCodeRunner {
 impl AdventOfCodeRunner {
     pub fn run(mut self) -> anyhow::Result<()> {
         if self.day.len() == 0 {
-            self.day = vec![1, 2]
+            self.day = vec![1, 2, 3]
         }
 
         for day in &self.day {
             match day {
                 1 => self.execute::<crate::day1::Day1>(*day)?,
                 2 => self.execute::<crate::day2::Day2>(*day)?,
+                3 => self.execute::<crate::day3::Day3>(*day)?,
                 n => panic!("Day not yet implemented: {}", n),
             };
         }
