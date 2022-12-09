@@ -7,7 +7,7 @@ struct Task {
 }
 
 fn parse_tasks(input: &str) -> (Task, Task) {
-    let mut chars = input.chars().to_owned();
+    let mut chars = input.chars();
 
     let start_1 = (&mut chars)
         .take_while(char::is_ascii_digit)
@@ -60,8 +60,7 @@ impl crate::runner::Day for Day4 {
         Ok(format!(
             "{}",
             input
-                .split('\n')
-                .filter(|a| a.len() > 0)
+                .lines()
                 .map(parse_tasks)
                 .map(|(task1, task2)| is_contained(task1, task2))
                 .map(|each| each as u32)
@@ -72,8 +71,7 @@ impl crate::runner::Day for Day4 {
         Ok(format!(
             "{}",
             input
-                .split('\n')
-                .filter(|a| a.len() > 0)
+                .lines()
                 .map(parse_tasks)
                 .map(|(task1, task2)| has_overlap(task1, task2))
                 .map(|each| each as u32)

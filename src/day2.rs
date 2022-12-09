@@ -75,8 +75,7 @@ impl crate::runner::Day for Day2 {
         Ok(format!(
             "{}",
             input
-                .split('\n')
-                .filter(|a| a.len() > 0)
+                .lines()
                 .map(parse_line_1)
                 .map(score_match)
                 .sum::<u32>()
@@ -86,8 +85,7 @@ impl crate::runner::Day for Day2 {
         Ok(format!(
             "{}",
             input
-                .split('\n')
-                .filter(|a| a.len() > 0)
+                .lines()
                 .map(parse_line_2)
                 .map(score_match)
                 .sum::<u32>()

@@ -43,8 +43,7 @@ impl crate::runner::Day for Day3 {
         Ok(format!(
             "{}",
             input
-                .split('\n')
-                .filter(|a| a.len() > 0)
+                .lines()
                 .map(split_at_center)
                 .map(find_common_element)
                 .sum::<u32>()
@@ -54,8 +53,7 @@ impl crate::runner::Day for Day3 {
         Ok(format!(
             "{}",
             input
-                .split('\n')
-                .filter(|a| a.len() > 0)
+                .lines()
                 .chunks(3)
                 .into_iter()
                 .map(|c| c.map(|s| s.to_owned()).collect_vec())
