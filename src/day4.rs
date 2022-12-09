@@ -1,48 +1,24 @@
 pub struct Day4;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Task {
     start: u32,
     end: u32,
 }
 
 fn parse_tasks(input: &str) -> (Task, Task) {
-    let mut chars = input.chars();
+    let mut tasks = <(Task, Task)>::default();
+    let mut task_strings = input.split(',');
 
-    let start_1 = (&mut chars)
-        .take_while(char::is_ascii_digit)
-        .collect::<String>()
-        .parse()
-        .unwrap();
+    let mut task_1_str = task_strings.next().unwrap().split('-');
+    tasks.0.start = task_1_str.next().unwrap().parse().unwrap();
+    tasks.0.end = task_1_str.next().unwrap().parse().unwrap();
 
-    let end_1 = (&mut chars)
-        .take_while(char::is_ascii_digit)
-        .collect::<String>()
-        .parse()
-        .unwrap();
+    let mut task_2_str = task_strings.next().unwrap().split('-');
+    tasks.1.start = task_2_str.next().unwrap().parse().unwrap();
+    tasks.1.end = task_2_str.next().unwrap().parse().unwrap();
 
-    let start_2 = (&mut chars)
-        .take_while(char::is_ascii_digit)
-        .collect::<String>()
-        .parse()
-        .unwrap();
-
-    let end_2 = (&mut chars)
-        .take_while(char::is_ascii_digit)
-        .collect::<String>()
-        .parse()
-        .unwrap();
-
-    (
-        Task {
-            start: start_1,
-            end: end_1,
-        },
-        Task {
-            start: start_2,
-            end: end_2,
-        },
-    )
+    tasks
 }
 
 fn is_contained(task1: Task, task2: Task) -> bool {
