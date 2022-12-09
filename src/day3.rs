@@ -10,22 +10,14 @@ fn split_at_center(input: &str) -> Vec<String> {
 }
 
 fn find_common_element(strings: Vec<String>) -> u32 {
-    let mut bits_vec = Vec::new();
-
-    for string in &strings {
-        let mut bits_in_string = [0_usize; 53];
-        for c in string.chars() {
-            bits_in_string[priority(c) as usize] = 1;
-        }
-
-        bits_vec.push(bits_in_string);
-    }
-
     let mut bits = [0_usize; 53];
 
-    for bits_in_string in bits_vec {
-        for index in 0..bits.len() {
-            bits[index] += bits_in_string[index];
+    for (idx, string) in strings.iter().enumerate() {
+        for c in string.chars() {
+            let c = priority(c) as usize;
+            if bits[c] == idx {
+                bits[c] = idx + 1
+            }
         }
     }
 
