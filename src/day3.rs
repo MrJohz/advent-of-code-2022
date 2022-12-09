@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use itertools::Itertools;
 
 pub struct Day3;
@@ -11,24 +9,33 @@ fn split_at_center(input: &str) -> Vec<String> {
     ]
 }
 
-fn find_common_element(strings: Vec<String>) -> char {
-    let sets = strings
-        .iter()
-        .skip(1)
-        .map(|s| HashSet::<_>::from_iter(s.chars()))
-        .collect::<Vec<_>>();
+fn find_common_element(strings: Vec<String>) -> u32 {
+    let mut bits_vec = Vec::new();
 
-    'outer: for elem in strings.first().unwrap().chars() {
-        for set in &sets {
-            if !set.contains(&elem) {
-                continue 'outer;
-            }
+    for string in &strings {
+        let mut bits_in_string = [0_usize; 53];
+        for c in string.chars() {
+            bits_in_string[priority(c) as usize] = 1;
         }
 
-        return elem;
+        bits_vec.push(bits_in_string);
     }
 
-    panic!("Found no elements common ")
+    let mut bits = [0_usize; 53];
+
+    for bits_in_string in bits_vec {
+        for index in 0..bits.len() {
+            bits[index] += bits_in_string[index];
+        }
+    }
+
+    for (index, &size) in bits.iter().enumerate() {
+        if size == strings.len() {
+            return index as u32;
+        }
+    }
+
+    panic!("Found no elements common ");
 }
 
 fn priority(c: char) -> u32 {
@@ -48,7 +55,6 @@ impl crate::runner::Day for Day3 {
                 .filter(|a| a.len() > 0)
                 .map(split_at_center)
                 .map(find_common_element)
-                .map(priority)
                 .sum::<u32>()
         ))
     }
@@ -62,7 +68,6 @@ impl crate::runner::Day for Day3 {
                 .into_iter()
                 .map(|c| c.map(|s| s.to_owned()).collect_vec())
                 .map(find_common_element)
-                .map(priority)
                 .sum::<u32>()
         ))
     }
