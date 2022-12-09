@@ -11,6 +11,14 @@ pub trait Day {
     fn part_2(_input: &str) -> anyhow::Result<String> {
         unimplemented!("part 2 of this day has not been implemented")
     }
+
+    fn expected_value_part_1() -> Option<&'static str> {
+        None
+    }
+
+    fn expected_value_part_2() -> Option<&'static str> {
+        None
+    }
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -82,22 +90,32 @@ impl AdventOfCodeRunner {
 
         if self.part == Part::Part1 || self.part == Part::Both {
             println!("Executing part 1");
-            let start = time::Instant::now();
-            let output = <D as Day>::part_1(&input)?;
-            let end = start.elapsed();
+            let (part_duration, output) = task_runner(&input, <D as Day>::part_1)?;
             println!("  {}", output);
-            println!("  [duration = {:?}]", end);
-            duration += end;
+            println!("  [duration = {:?}]", part_duration);
+            if let Some(expected) = <D as Day>::expected_value_part_1() {
+                println!(
+                    "  [expected = {}{}]",
+                    expected,
+                    if expected == output { "" } else { " !FAILED!" }
+                )
+            }
+            duration += part_duration;
         }
 
         if self.part == Part::Part2 || self.part == Part::Both {
             println!("Executing part 2");
-            let start = time::Instant::now();
-            let output = <D as Day>::part_2(&input)?;
-            let end = start.elapsed();
+            let (part_duration, output) = task_runner(&input, <D as Day>::part_2)?;
             println!("  {}", output);
-            println!("  [duration = {:?}]", end);
-            duration += end;
+            if let Some(expected) = <D as Day>::expected_value_part_2() {
+                println!(
+                    "  [expected = {}{}]",
+                    expected,
+                    if expected == output { "" } else { " !FAILED!" }
+                )
+            }
+            println!("  [duration = {:?}]", part_duration);
+            duration += part_duration;
         }
 
         println!();
@@ -105,4 +123,30 @@ impl AdventOfCodeRunner {
 
         Ok(())
     }
+}
+
+fn task_runner(
+    input: &str,
+    f: impl Fn(&str) -> anyhow::Result<String>,
+) -> anyhow::Result<(time::Duration, String)> {
+    let response = f(input)?;
+
+    let mut time_sum = Duration::default();
+
+    for _ in 0..100 {
+        let start = time::Instant::now();
+        let res = f(input);
+        let end = start.elapsed();
+        time_sum += end;
+
+        let res = res?;
+
+        if res != response {
+            panic!("Task is inconsistent - got {:?} then {:?}", response, res);
+        }
+    }
+
+    time_sum /= 100;
+
+    Ok((time_sum, response))
 }

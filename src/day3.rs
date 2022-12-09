@@ -49,6 +49,10 @@ impl crate::runner::Day for Day3 {
                 .sum::<u32>()
         ))
     }
+    fn expected_value_part_1() -> Option<&'static str> {
+        Some("7674")
+    }
+
     fn part_2(input: &str) -> anyhow::Result<String> {
         Ok(format!(
             "{}",
@@ -60,5 +64,8 @@ impl crate::runner::Day for Day3 {
                 .map(find_common_element)
                 .sum::<u32>()
         ))
+    }
+    fn expected_value_part_2() -> Option<&'static str> {
+        Some("2805")
     }
 }

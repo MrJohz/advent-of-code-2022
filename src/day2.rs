@@ -81,6 +81,10 @@ impl crate::runner::Day for Day2 {
                 .sum::<u32>()
         ))
     }
+    fn expected_value_part_1() -> Option<&'static str> {
+        Some("13009")
+    }
+
     fn part_2(input: &str) -> anyhow::Result<String> {
         Ok(format!(
             "{}",
@@ -90,5 +94,8 @@ impl crate::runner::Day for Day2 {
                 .map(score_match)
                 .sum::<u32>()
         ))
+    }
+    fn expected_value_part_2() -> Option<&'static str> {
+        Some("10398")
     }
 }

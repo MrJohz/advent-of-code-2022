@@ -76,6 +76,10 @@ impl crate::runner::Day for Day5 {
 
         Ok(items.iter().map(|v| v.last().unwrap()).join(""))
     }
+    fn expected_value_part_1() -> Option<&'static str> {
+        Some("QGTHFZBHV")
+    }
+
     fn part_2(input: &str) -> anyhow::Result<String> {
         let mut input = input.lines().filter(|l| !l.is_empty());
         let mut items = parse_structure(&mut input);
@@ -84,5 +88,8 @@ impl crate::runner::Day for Day5 {
         apply_actions_quickly(&mut items, &commands);
 
         Ok(items.iter().map(|v| v.last().unwrap()).join(""))
+    }
+    fn expected_value_part_2() -> Option<&'static str> {
+        Some("MGDMPSZTM")
     }
 }

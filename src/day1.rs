@@ -41,9 +41,18 @@ impl crate::runner::Day for Day1 {
         let weights = find_weight_totals(input)?;
         Ok(format!("{}", find_largest(&weights)))
     }
+
+    fn expected_value_part_1() -> Option<&'static str> {
+        Some("71924")
+    }
+
     fn part_2(input: &str) -> anyhow::Result<String> {
         let weights = find_weight_totals(input)?;
         let (w1, w2, w3) = find_largest_three(&weights);
         Ok(format!("{}", w1 + w2 + w3))
+    }
+
+    fn expected_value_part_2() -> Option<&'static str> {
+        Some("210406")
     }
 }

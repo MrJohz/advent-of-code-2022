@@ -51,7 +51,7 @@ fn is_contained(task1: Task, task2: Task) -> bool {
 }
 
 fn has_overlap(task1: Task, task2: Task) -> bool {
-    !((task1.start < task2.start && task1.end < task2.end)
+    !((task1.start < task2.start && task1.end < task2.start)
         || (task2.start < task1.start && task2.end < task1.start))
 }
 
@@ -67,6 +67,10 @@ impl crate::runner::Day for Day4 {
                 .sum::<u32>()
         ))
     }
+    fn expected_value_part_1() -> Option<&'static str> {
+        Some("441")
+    }
+
     fn part_2(input: &str) -> anyhow::Result<String> {
         Ok(format!(
             "{}",
@@ -77,5 +81,8 @@ impl crate::runner::Day for Day4 {
                 .map(|each| each as u32)
                 .sum::<u32>()
         ))
+    }
+    fn expected_value_part_2() -> Option<&'static str> {
+        Some("861")
     }
 }
