@@ -1,61 +1,26 @@
 pub struct Day7;
 
 #[derive(PartialEq, Eq, Debug)]
-enum Line<'a> {
-    ChangeDir(&'a str),
+enum Line {
+    ChangeDir,
     ChangeUpDir,
-    ListDir,
-    FoundDirectory(&'a str),
-    FoundFile(&'a str, usize),
+    FoundFile(usize),
 }
 
-impl<'a> Line<'a> {
-    fn parse(input: &'a str) -> Self {
+impl Line {
+    fn parse(input: &str) -> Option<Self> {
         if input.starts_with("$ l") {
-            Self::ListDir
+            None
         } else if input.starts_with("d") {
-            Self::FoundDirectory(&input[4..])
+            None
         } else if input == "$ cd .." {
-            Self::ChangeUpDir
+            Some(Self::ChangeUpDir)
         } else if input.starts_with("$ cd") {
-            Self::ChangeDir(&input[5..])
+            Some(Self::ChangeDir)
         } else {
-            let (nums, file) = input.split_once(' ').unwrap();
-            Self::FoundFile(file, nums.parse().unwrap())
+            let (nums, _) = input.split_once(' ').unwrap();
+            Some(Self::FoundFile(nums.parse().unwrap()))
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parses_change_up_directory() {
-        assert_eq!(Line::parse("$ cd .."), Line::ChangeUpDir);
-    }
-
-    #[test]
-    fn test_parses_change_directory() {
-        assert_eq!(Line::parse("$ cd hello"), Line::ChangeDir("hello"));
-    }
-
-    #[test]
-    fn test_parses_directory_output() {
-        assert_eq!(Line::parse("dir hello"), Line::FoundDirectory("hello"));
-    }
-
-    #[test]
-    fn test_parses_file_output() {
-        assert_eq!(
-            Line::parse("14848514 b.txt"),
-            Line::FoundFile("b.txt", 14848514)
-        );
-    }
-
-    #[test]
-    fn test_parses_list_directory() {
-        assert_eq!(Line::parse("$ ls"), Line::ListDir);
     }
 }
 
@@ -65,11 +30,10 @@ fn collect_directory_sizes(input: &str) -> Vec<usize> {
 
     for line in input.lines().map(Line::parse) {
         match line {
-            Line::ChangeDir(_) => current_path.push(0),
-            Line::ChangeUpDir => found_directories.push(current_path.pop().unwrap()),
-            Line::ListDir => {}
-            Line::FoundDirectory(_) => {}
-            Line::FoundFile(_, size) => {
+            None => {}
+            Some(Line::ChangeDir) => current_path.push(0),
+            Some(Line::ChangeUpDir) => found_directories.push(current_path.pop().unwrap()),
+            Some(Line::FoundFile(size)) => {
                 for path in &mut current_path {
                     *path += size;
                 }
