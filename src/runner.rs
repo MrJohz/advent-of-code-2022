@@ -74,6 +74,7 @@ impl AdventOfCodeRunner {
                 6 => self.execute::<crate::day6::Day6>(*day)?,
                 7 => self.execute::<crate::day7::Day7>(*day)?,
                 8 => self.execute::<crate::day8::Day8>(*day)?,
+                9 => self.execute::<crate::day9::Day9>(*day)?,
                 n => panic!("Day not yet implemented: {}", n),
             };
         }
