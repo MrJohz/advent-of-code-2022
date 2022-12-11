@@ -168,7 +168,7 @@ struct SeenMap {
 impl SeenMap {
     fn mark_seen(&mut self, (x, y): (isize, isize)) {
         let pos = &mut self.map[(x + self.start_pos.0) as usize][(y + self.start_pos.1) as usize];
-        if *pos == false {
+        if !(*pos) {
             self.seen += 1;
         }
         *pos = true;

@@ -15,11 +15,7 @@ impl Computer {
         }
     }
 
-    fn apply_instruction(
-        &mut self,
-        instruction: Instruction,
-        mut callback: impl FnMut(&Computer) -> (),
-    ) {
+    fn apply_instruction(&mut self, instruction: Instruction, mut callback: impl FnMut(&Computer)) {
         self.instr_ct += 1;
 
         match instruction {

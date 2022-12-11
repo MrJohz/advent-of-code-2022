@@ -4,7 +4,7 @@ fn find_weight_totals(input: &str) -> anyhow::Result<Vec<u32>> {
     let mut weights = vec![0];
 
     for line in input.split('\n') {
-        if line == "" {
+        if line.is_empty() {
             weights.push(0);
             continue;
         }

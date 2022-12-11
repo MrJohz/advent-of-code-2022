@@ -130,10 +130,7 @@ impl crate::runner::Day for Day11 {
 
     fn part_2(input: &str) -> anyhow::Result<String> {
         let mut monkeys = parse_monkeys(input);
-        let divisors = monkeys
-            .iter()
-            .map(|m| m.test_divisor)
-            .fold(1, |prev, next| prev * next);
+        let divisors: usize = monkeys.iter().map(|m| m.test_divisor).product();
 
         process_monkeys(
             10_000,

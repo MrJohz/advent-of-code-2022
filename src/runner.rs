@@ -60,7 +60,7 @@ pub struct AdventOfCodeRunner {
 
 impl AdventOfCodeRunner {
     pub fn run(mut self) -> anyhow::Result<()> {
-        if self.day.len() == 0 {
+        if self.day.is_empty() {
             self.day = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         }
 

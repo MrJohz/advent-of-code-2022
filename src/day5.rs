@@ -13,9 +13,8 @@ fn parse_structure<'a>(input: &mut impl Iterator<Item = &'a str>) -> Vec<Vec<cha
         }
 
         for (idx, char) in line.chars().enumerate() {
-            match char {
-                'A'..='Z' => v[((idx + 3) / 4) - 1].push(char),
-                _ => {}
+            if let 'A'..='Z' = char {
+                v[((idx + 3) / 4) - 1].push(char)
             }
         }
     }
@@ -24,13 +23,13 @@ fn parse_structure<'a>(input: &mut impl Iterator<Item = &'a str>) -> Vec<Vec<cha
         stack.reverse();
     }
 
-    return v;
+    v
 }
 
 fn parse_commands<'a>(input: &mut impl Iterator<Item = &'a str>) -> Vec<(u32, usize, usize)> {
     input
         .map(|line| {
-            let two_digit = line.bytes().nth(6) != Some(' ' as u8);
+            let two_digit = line.as_bytes().get(6) != Some(&b' ');
             if two_digit {
                 let count = line[5..7].parse().unwrap();
                 let from = line[13..14].parse().unwrap();

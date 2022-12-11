@@ -9,9 +9,7 @@ enum Line {
 
 impl Line {
     fn parse(input: &str) -> Option<Self> {
-        if input.starts_with("$ l") {
-            None
-        } else if input.starts_with("d") {
+        if input.starts_with("$ l") || input.starts_with('d') {
             None
         } else if input == "$ cd .." {
             Some(Self::ChangeUpDir)
