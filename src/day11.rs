@@ -101,7 +101,12 @@ fn process_monkeys(rounds: usize, monkeys: &mut [Monkey], on_worry: impl Fn(usiz
 impl crate::runner::Day for Day11 {
     fn part_1(input: &str) -> anyhow::Result<String> {
         let mut monkeys = parse_monkeys(input);
-        process_monkeys(20, &mut monkeys, |each| each / 3);
+        process_monkeys(
+            20,
+            &mut monkeys,
+            #[inline(always)]
+            |each| each / 3,
+        );
         let (best, second_best) =
             monkeys
                 .iter()
@@ -128,7 +133,12 @@ impl crate::runner::Day for Day11 {
             .map(|m| m.test_divisor)
             .fold(1, |prev, next| prev * next);
 
-        process_monkeys(10_000, &mut monkeys, |each| each % divisors);
+        process_monkeys(
+            10_000,
+            &mut monkeys,
+            #[inline(always)]
+            move |each| each % divisors,
+        );
         let (best, second_best) =
             monkeys
                 .iter()
