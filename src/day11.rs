@@ -139,7 +139,7 @@ impl crate::runner::Day for Day11 {
             10_000,
             &mut monkeys,
             #[inline(always)]
-            move |each| each % divisors,
+            |each| each % divisors,
         );
         let (best, second_best) =
             monkeys
