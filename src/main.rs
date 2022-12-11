@@ -14,8 +14,6 @@ mod day9;
 mod runner;
 
 fn main() {
-    for _ in 0..25 {
-        let runner = runner::AdventOfCodeRunner::parse();
-        runner.run().unwrap();
-    }
+    let runner = runner::AdventOfCodeRunner::parse();
+    runner.run().unwrap();
 }
