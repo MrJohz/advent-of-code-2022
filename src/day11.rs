@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 pub struct Day11;
 
 #[derive(Debug, Clone, Copy)]
@@ -9,7 +11,7 @@ enum Operation {
 
 #[derive(Debug)]
 struct Monkey {
-    items: Vec<usize>,
+    items: VecDeque<usize>,
     operation: Operation,
     inspect_count: usize,
     test_divisor: usize,
@@ -83,15 +85,15 @@ fn parse_monkeys(input: &str) -> Vec<Monkey> {
 fn process_monkeys(rounds: usize, monkeys: &mut [Monkey], on_worry: impl Fn(usize) -> usize) {
     for _ in 0..rounds {
         for idx in 0..monkeys.len() {
-            let items = monkeys[idx].items.split_off(0);
-
-            for item in items {
+            while let Some(item) = monkeys[idx].items.pop_front() {
                 monkeys[idx].inspect_count += 1;
                 let new_item = on_worry(apply_operation(monkeys[idx].operation, item));
                 if new_item % monkeys[idx].test_divisor == 0 {
-                    monkeys[monkeys[idx].test_true_id].items.push(new_item);
+                    monkeys[monkeys[idx].test_true_id].items.push_back(new_item);
                 } else {
-                    monkeys[monkeys[idx].test_false_id].items.push(new_item);
+                    monkeys[monkeys[idx].test_false_id]
+                        .items
+                        .push_back(new_item);
                 }
             }
         }
