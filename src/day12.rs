@@ -1,4 +1,4 @@
-use std::{cmp::Reverse, collections::BinaryHeap, marker::PhantomData};
+use std::{collections::VecDeque, marker::PhantomData};
 
 pub struct Day12;
 
@@ -89,36 +89,25 @@ impl<T: Strategy> HeightMap<T> {
         &neighbour_space[0..idx]
     }
 
-    fn steps_between(
-        &self,
-        start: (usize, usize),
-        end_condition: impl Fn(&HeightMap<T>, (usize, usize)) -> bool,
-    ) -> usize {
-        let mut heap = BinaryHeap::new();
+    fn steps_between(&self, start: (usize, usize)) -> usize {
+        let mut heap = VecDeque::new();
         let mut knowledge_map = vec![vec![(None, usize::MAX); self.width]; self.height];
 
-        heap.push(Reverse((0, start)));
+        heap.push_back(start);
         knowledge_map[start.1][start.0].1 = 0;
 
         let mut neighbour_space = [(0, 0); 4];
 
-        while let Some(elem) = heap.pop() {
-            let (_, pos) = elem.0;
-            if end_condition(self, pos) {
-                let mut counts = 0;
-                let mut pos = pos;
-                while let Some(new_pos) = knowledge_map[pos.1][pos.0].0 {
-                    counts += 1;
-                    pos = new_pos;
-                }
-                return counts;
+        while let Some(pos) = heap.pop_front() {
+            if T::end_condition(self, pos) {
+                return knowledge_map[pos.1][pos.0].1;
             }
 
             for &neighbour in self.neighbours(pos, &mut neighbour_space) {
                 let potential_score = knowledge_map[pos.1][pos.0].1 + 1;
                 if potential_score < knowledge_map[neighbour.1][neighbour.0].1 {
                     knowledge_map[neighbour.1][neighbour.0] = (Some(pos), potential_score);
-                    heap.push(Reverse((potential_score, neighbour)));
+                    heap.push_back(neighbour);
                 }
             }
         }
@@ -169,9 +158,7 @@ fn parse_height_map<T: Strategy>(input: &str) -> HeightMap<T> {
 impl crate::runner::Day for Day12 {
     fn part_1(input: &str) -> anyhow::Result<String> {
         let height_map = parse_height_map::<Part1Strategy>(input);
-        Ok(height_map
-            .steps_between(height_map.start_pos, |hm, position| hm.end_pos == position)
-            .to_string())
+        Ok(height_map.steps_between(height_map.start_pos).to_string())
     }
     fn expected_value_part_1() -> Option<&'static str> {
         Some("339")
@@ -179,11 +166,7 @@ impl crate::runner::Day for Day12 {
 
     fn part_2(input: &str) -> anyhow::Result<String> {
         let height_map = parse_height_map::<Part2Strategy>(input);
-        Ok(height_map
-            .steps_between(height_map.end_pos, |hm, position| {
-                hm.heights[position.1][position.0] == 0
-            })
-            .to_string())
+        Ok(height_map.steps_between(height_map.end_pos).to_string())
     }
     fn expected_value_part_2() -> Option<&'static str> {
         Some("332")
