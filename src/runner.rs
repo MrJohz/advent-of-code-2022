@@ -61,7 +61,7 @@ pub struct AdventOfCodeRunner {
 impl AdventOfCodeRunner {
     pub fn run(mut self) -> anyhow::Result<()> {
         if self.day.is_empty() {
-            self.day = (1..13).collect()
+            self.day = (1..=13).collect()
         }
 
         for day in &self.day {
