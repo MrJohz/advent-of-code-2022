@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
 
 use itertools::Itertools;
-use rayon::slice::ParallelSliceMut;
 
 pub struct Day13;
 
@@ -107,23 +106,25 @@ impl crate::runner::Day for Day13 {
     fn part_2(input: &str) -> anyhow::Result<String> {
         let divider_2 = DataStr(b"[[2]]");
         let divider_6 = DataStr(b"[[6]]");
-        let mut items = vec![DataStr(b"[[2]]"), DataStr(b"[[6]]")];
-        items.extend(
-            input
-                .lines()
-                .filter(|l| !l.is_empty())
-                .map(DataStr::from_str),
-        );
-        items.par_sort_unstable();
 
-        let sum = items
-            .into_iter()
-            .enumerate()
-            .filter(|(_, item)| item == &divider_2 || item == &divider_6)
-            .map(|(idx, _)| idx + 1)
-            .product::<usize>();
+        let mut divider_2_pos = 1;
+        let mut divider_6_pos = 2; // always comes after div2
 
-        Ok(sum.to_string())
+        let lines = input
+            .lines()
+            .filter(|l| !l.is_empty())
+            .map(DataStr::from_str);
+
+        for line in lines {
+            if line < divider_2 {
+                divider_2_pos += 1;
+                divider_6_pos += 1;
+            } else if line < divider_6 {
+                divider_6_pos += 1;
+            }
+        }
+
+        Ok((divider_2_pos * divider_6_pos).to_string())
     }
     fn expected_value_part_2() -> Option<&'static str> {
         Some("20383")
