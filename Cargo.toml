@@ -9,3 +9,6 @@ edition = "2021"
 anyhow = "1.0.66"
 clap = { version = "4.0.29", features = ["derive"] }
 itertools = "0.10.5"
+rayon = "1.6.1"
+serde = { version = "1.0.150", features = ["derive"] }
+simd-json = "0.7.0"
