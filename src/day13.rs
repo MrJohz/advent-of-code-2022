@@ -1,79 +1,89 @@
-use std::str::FromStr;
+use std::cmp::Ordering;
 
 use itertools::Itertools;
-use rayon::{
-    prelude::{ParallelBridge, ParallelIterator},
-    slice::ParallelSliceMut,
-};
+use rayon::slice::ParallelSliceMut;
 
 pub struct Day13;
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
-#[serde(untagged)]
-enum Data {
-    Array(Vec<Data>),
-    Integer(usize),
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DataStr<'a>(&'a [u8]);
+
+impl<'a> DataStr<'a> {
+    fn from_str(str: &'a str) -> Self {
+        Self(str.as_bytes())
+    }
+
+    fn get_int(&'a self, idx: usize) -> (u8, usize) {
+        match (self.0[idx], self.0[idx + 1]) {
+            (b'1', b'0') => (10, idx + 2),
+            (c, _) => (c - b'0', idx + 1),
+        }
+    }
 }
 
-impl PartialOrd for Data {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+impl<'a> PartialOrd for DataStr<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for Data {
+impl<'a> Ord for DataStr<'a> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match (self, other) {
-            (Self::Integer(n1), Self::Integer(n2)) => n1.cmp(n2),
-            (Self::Array(a1), Self::Array(a2)) => a1.cmp(a2),
-            (Self::Array(a1), Self::Integer(n2)) => a1.cmp(&vec![Self::Integer(*n2)]),
-            (Self::Integer(n1), Self::Array(a2)) => vec![Self::Integer(*n1)].cmp(a2),
-        }
-    }
-}
-
-impl Data {
-    fn create_int_from_bytes(start_idx: usize, bytes: &[u8]) -> (Self, usize) {
-        match (bytes[start_idx], bytes[start_idx + 1]) {
-            (b'1', b'0') => (Self::Integer(10), start_idx + 2),
-            (c, _) => (Self::Integer((c - b'0') as usize), start_idx + 1),
-        }
-    }
-
-    fn create_array_from_bytes(mut start_idx: usize, bytes: &[u8]) -> (Self, usize) {
-        start_idx += 1;
-        let mut elems = Vec::new();
+        let mut self_idx = 1;
+        let mut self_nesting = 0;
+        let mut other_idx = 1;
+        let mut other_nesting = 0;
 
         loop {
-            match bytes[start_idx] {
-                b']' => return (Self::Array(elems), start_idx + 1),
-                b'0'..=b'9' => {
-                    let (elem, idx) = Self::create_int_from_bytes(start_idx, bytes);
-                    elems.push(elem);
-                    start_idx = idx;
-                    continue;
+            match (self.0[self_idx], other.0[other_idx]) {
+                (b']', b']') => {
+                    self_idx += 1;
+                    other_idx += 1;
                 }
-                b'[' => {
-                    let (elem, idx) = Self::create_array_from_bytes(start_idx, bytes);
-                    elems.push(elem);
-                    start_idx = idx;
-                    continue;
+                (b',' | b']', _) if self_nesting > 0 => {
+                    self_nesting -= 1;
+                    if self_nesting == 0 && self.0[self_idx] == b',' {
+                        return Ordering::Less;
+                    }
                 }
-                _ => start_idx += 1,
+                (_, b',' | b']') if other_nesting > 0 => {
+                    other_nesting -= 1;
+                    if other_nesting == 0 && other.0[other_idx] == b',' {
+                        return Ordering::Greater;
+                    }
+                }
+
+                (_, b']') => return Ordering::Greater,
+                (b']', _) => return Ordering::Less,
+                (b'0'..=b'9', b'0'..=b'9') => {
+                    let (left, left_idx) = self.get_int(self_idx);
+                    let (right, right_idx) = other.get_int(other_idx);
+                    match left.cmp(&right) {
+                        Ordering::Equal => {
+                            self_idx = left_idx;
+                            other_idx = right_idx;
+                            continue;
+                        }
+                        ord => return ord,
+                    }
+                }
+                (l, r) if l == r => {
+                    self_idx += 1;
+                    other_idx += 1;
+                }
+                (b'[', _) => {
+                    self_idx += 1;
+                    other_nesting += 1;
+                }
+                (_, b'[') => {
+                    other_idx += 1;
+                    self_nesting += 1;
+                }
+                (l, r) => panic!(
+                    "Found {l} ({self_idx}) and {r} ({other_idx}) for {self:?} and {other:?}"
+                ),
             }
         }
-    }
-}
-
-impl FromStr for Data {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let bytes = &s.as_bytes();
-
-        let (me, _) = Self::create_array_from_bytes(0, bytes);
-
-        Ok(me)
     }
 }
 
@@ -82,15 +92,9 @@ impl crate::runner::Day for Day13 {
         let sum = input
             .lines()
             .filter(|l| !l.is_empty())
+            .map(DataStr::from_str)
             .tuples()
             .enumerate()
-            .par_bridge()
-            .map(|(idx, (s1, s2))| {
-                (
-                    idx,
-                    (s1.parse::<Data>().unwrap(), s2.parse::<Data>().unwrap()),
-                )
-            })
             .filter(|(_, (left, right))| left < right)
             .map(|(idx, _)| idx + 1)
             .sum::<usize>();
@@ -101,14 +105,14 @@ impl crate::runner::Day for Day13 {
     }
 
     fn part_2(input: &str) -> anyhow::Result<String> {
-        let divider_2 = Data::Array(vec![Data::Array(vec![Data::Integer(2)])]);
-        let divider_6 = Data::Array(vec![Data::Array(vec![Data::Integer(6)])]);
-        let mut items = vec![divider_2.clone(), divider_6.clone()];
+        let divider_2 = DataStr(b"[[2]]");
+        let divider_6 = DataStr(b"[[6]]");
+        let mut items = vec![DataStr(b"[[2]]"), DataStr(b"[[6]]")];
         items.extend(
             input
                 .lines()
                 .filter(|l| !l.is_empty())
-                .map(|each| each.parse().unwrap()),
+                .map(DataStr::from_str),
         );
         items.par_sort_unstable();
 
@@ -128,126 +132,66 @@ impl crate::runner::Day for Day13 {
 
 #[cfg(test)]
 mod tests {
-    use super::Data::*;
+    use super::*;
 
     #[test]
-    fn ordering_data_integers_works_as_expected() {
-        assert!(Integer(1) < Integer(2));
-        assert!(Integer(2) == Integer(2));
+    fn data_str_integers_works_as_expected() {
+        assert!(DataStr(b"[1]") < DataStr(b"[2]"));
+        assert!(DataStr(b"[2]") > DataStr(b"[1]"));
+        assert!(DataStr(b"[10]") > DataStr(b"[9]"));
+        assert!(DataStr(b"[1]") < DataStr(b"[10]"));
     }
 
     #[test]
-    fn ordering_equal_sized_data_arrays_works_as_expected() {
-        assert!(Array(vec![Integer(1)]) < Array(vec![Integer(2)]));
-        assert!(Array(vec![Integer(2)]) == Array(vec![Integer(2)]));
+    fn data_str_equal_sized_arrays_works_as_expected() {
+        assert!(DataStr(b"[[1]]") < DataStr(b"[[2]]"));
+        assert!(DataStr(b"[[2]]") > DataStr(b"[[1]]"));
     }
 
     #[test]
-    fn ordering_nested_data_arrays_works_as_expected() {
-        assert!(Array(vec![Array(vec![Integer(1)])]) < Array(vec![Array(vec![Integer(2)])]));
-        assert!(Array(vec![Array(vec![Integer(2)])]) == Array(vec![Array(vec![Integer(2)])]));
+    fn data_str_unequally_equal_sized_arrays_works_as_expected() {
+        assert!(DataStr(b"[[1,2]]") < DataStr(b"[[2]]"));
+        assert!(DataStr(b"[[1]]") < DataStr(b"[[1,2]]"));
+        assert!(DataStr(b"[[1,2]]") < DataStr(b"[[2,1]]"));
     }
 
     #[test]
-    fn ordering_unequally_sized_arrays_works_as_expected() {
-        assert!(Array(vec![Integer(1), Integer(2)]) < Array(vec![Integer(2)]));
-        assert!(Array(vec![Integer(1)]) < Array(vec![Integer(1), Integer(2)]));
-        assert!(Array(vec![Integer(1)]) < Array(vec![Integer(2), Integer(1)]));
+    fn data_str_demo_example_1() {
+        assert!(DataStr(b"[1,1,3,1,1]") < DataStr(b"[1,1,5,1,1]"),);
     }
 
     #[test]
-    fn demo_example_1() {
-        assert!(
-            Array(vec![
-                Integer(1),
-                Integer(1),
-                Integer(3),
-                Integer(1),
-                Integer(1)
-            ]) < Array(vec![
-                Integer(1),
-                Integer(1),
-                Integer(5),
-                Integer(1),
-                Integer(1)
-            ]),
-        );
+    fn data_str_demo_example_2() {
+        assert!(DataStr(b"[[1],[2,3,4]]") < DataStr(b"[[1],4]"),);
     }
 
     #[test]
-    fn demo_example_2() {
-        assert!(
-            Array(vec![
-                Array(vec![Integer(1)]),
-                Array(vec![Integer(2), Integer(3), Integer(4)]),
-            ]) < Array(vec![Array(vec![Integer(1)]), Integer(4)]),
-        );
+    fn data_str_demo_example_3() {
+        assert!(DataStr(b"[9]") > DataStr(b"[[8,7,6]]"),);
     }
 
     #[test]
-    fn demo_example_3() {
-        assert!(
-            Array(vec![Integer(9)]) > Array(vec![Array(vec![Integer(8), Integer(7), Integer(6)])])
-        );
+    fn data_str_demo_example_4() {
+        assert!(DataStr(b"[[4,4],4,4]") < DataStr(b"[[4,4],4,4,4]"),);
     }
 
     #[test]
-    fn demo_example_4() {
-        assert!(
-            Array(vec![
-                Array(vec![Integer(4), Integer(4)]),
-                Integer(4),
-                Integer(4)
-            ]) < Array(vec![
-                Array(vec![Integer(4), Integer(4)]),
-                Integer(4),
-                Integer(4),
-                Integer(4)
-            ]),
-        );
+    fn data_str_demo_example_5() {
+        assert!(DataStr(b"[7,7,7,7]") > DataStr(b"[7,7,7]"),);
     }
 
     #[test]
-    fn demo_example_5() {
-        assert!(
-            Array(vec![Integer(7), Integer(7), Integer(7), Integer(7)])
-                > Array(vec![Integer(7), Integer(7), Integer(7)])
-        );
+    fn data_str_demo_example_6() {
+        assert!(DataStr(b"[]") < DataStr(b"[3]"),);
     }
 
     #[test]
-    fn demo_example_6() {
-        assert!(Array(vec![]) < Array(vec![Integer(3)]));
+    fn data_str_demo_example_7() {
+        assert!(DataStr(b"[[[]]]") > DataStr(b"[[]]"),);
     }
 
     #[test]
-    fn demo_example_7() {
-        assert!(Array(vec![Array(vec![Array(vec![])])]) > Array(vec![Array(vec![])]));
-    }
-
-    #[test]
-    fn parses_array_of_numbers() {
-        assert_eq!(
-            Array(vec![Integer(1), Integer(2), Integer(10), Integer(0)]),
-            "[1,2,10,0]".parse().unwrap()
-        )
-    }
-
-    #[test]
-    fn parses_empty_array() {
-        assert_eq!(Array(vec![]), "[]".parse().unwrap())
-    }
-
-    #[test]
-    fn parses_nested_arrays() {
-        assert_eq!(
-            Array(vec![
-                Integer(1),
-                Array(vec![]),
-                Array(vec![Integer(1)]),
-                Array(vec![Array(vec![Integer(1)])])
-            ]),
-            "[1,[],[1],[[1]]]".parse().unwrap()
-        )
+    fn data_str_buggy_case() {
+        assert!(DataStr(b"[[[10,[6,6]]]]") > DataStr(b"[[10,[[9,10,0],2]]]]"));
     }
 }
