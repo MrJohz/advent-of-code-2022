@@ -125,7 +125,7 @@ fn parse_height_map<T: Strategy>(input: &str) -> HeightMap<T> {
         .enumerate()
         .map(|(y, line)| {
             line.as_bytes()
-                .into_iter()
+                .iter()
                 .enumerate()
                 .map(|(x, b)| match *b {
                     b'S' => {
