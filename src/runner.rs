@@ -61,25 +61,26 @@ pub struct AdventOfCodeRunner {
 impl AdventOfCodeRunner {
     pub fn run(mut self) -> anyhow::Result<()> {
         if self.day.is_empty() {
-            self.day = (1..=14).collect()
+            self.day = (1..=15).collect()
         }
 
         for day in &self.day {
             match day {
-                1 => self.execute::<crate::day1::Day1>(*day)?,
-                2 => self.execute::<crate::day2::Day2>(*day)?,
-                3 => self.execute::<crate::day3::Day3>(*day)?,
-                4 => self.execute::<crate::day4::Day4>(*day)?,
-                5 => self.execute::<crate::day5::Day5>(*day)?,
-                6 => self.execute::<crate::day6::Day6>(*day)?,
-                7 => self.execute::<crate::day7::Day7>(*day)?,
-                8 => self.execute::<crate::day8::Day8>(*day)?,
-                9 => self.execute::<crate::day9::Day9>(*day)?,
+                1 => self.execute::<crate::day01::Day1>(*day)?,
+                2 => self.execute::<crate::day02::Day2>(*day)?,
+                3 => self.execute::<crate::day03::Day3>(*day)?,
+                4 => self.execute::<crate::day04::Day4>(*day)?,
+                5 => self.execute::<crate::day05::Day5>(*day)?,
+                6 => self.execute::<crate::day06::Day6>(*day)?,
+                7 => self.execute::<crate::day07::Day7>(*day)?,
+                8 => self.execute::<crate::day08::Day8>(*day)?,
+                9 => self.execute::<crate::day09::Day9>(*day)?,
                 10 => self.execute::<crate::day10::Day10>(*day)?,
                 11 => self.execute::<crate::day11::Day11>(*day)?,
                 12 => self.execute::<crate::day12::Day12>(*day)?,
                 13 => self.execute::<crate::day13::Day13>(*day)?,
                 14 => self.execute::<crate::day14::Day14>(*day)?,
+                15 => self.execute::<crate::day15::Day15>(*day)?,
                 n => panic!("Day not yet implemented: {}", n),
             };
         }
