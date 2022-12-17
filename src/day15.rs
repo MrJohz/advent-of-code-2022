@@ -122,6 +122,6 @@ impl crate::runner::Day for Day15 {
         Ok((found_position.0 * 4_000_000 + found_position.1).to_string())
     }
     fn expected_value_part_2() -> Option<&'static str> {
-        Some("26831")
+        Some("10693731308112")
     }
 }

@@ -1,8 +1,4 @@
-use std::{
-    fs,
-    path::PathBuf,
-    time::{self, Duration},
-};
+use std::{fs, path::PathBuf};
 
 pub trait Day {
     fn part_1(_input: &str) -> anyhow::Result<String> {
@@ -96,13 +92,10 @@ impl AdventOfCodeRunner {
         println!("  [using input {:?}]", &file_path);
         println!();
 
-        let mut duration = Duration::new(0, 0);
-
         if self.part == Part::Part1 || self.part == Part::Both {
             println!("Executing part 1");
-            let (part_duration, output) = task_runner(&input, <D as Day>::part_1)?;
+            let output = <D as Day>::part_1(&input)?;
             println!("  {}", output);
-            println!("  [duration = {:?}]", part_duration);
             if let Some(expected) = <D as Day>::expected_value_part_1() {
                 println!(
                     "  [expected = {}{}]",
@@ -110,12 +103,11 @@ impl AdventOfCodeRunner {
                     if expected == output { "" } else { " !FAILED!" }
                 )
             }
-            duration += part_duration;
         }
 
         if self.part == Part::Part2 || self.part == Part::Both {
             println!("Executing part 2");
-            let (part_duration, output) = task_runner(&input, <D as Day>::part_2)?;
+            let output = <D as Day>::part_2(&input)?;
             println!("  {}", output);
             if let Some(expected) = <D as Day>::expected_value_part_2() {
                 println!(
@@ -124,39 +116,9 @@ impl AdventOfCodeRunner {
                     if expected == output { "" } else { " !FAILED!" }
                 )
             }
-            println!("  [duration = {:?}]", part_duration);
-            duration += part_duration;
         }
 
         println!();
-        println!("Total duration: {:?}", duration);
-
         Ok(())
     }
-}
-
-fn task_runner(
-    input: &str,
-    f: impl Fn(&str) -> anyhow::Result<String>,
-) -> anyhow::Result<(time::Duration, String)> {
-    let response = f(input)?;
-
-    let mut time_sum = Duration::default();
-
-    // for _ in 0..100 {
-    //     let start = time::Instant::now();
-    //     let res = f(input);
-    //     let end = start.elapsed();
-    //     time_sum += end;
-
-    //     let res = res?;
-
-    //     if res != response {
-    //         panic!("Task is inconsistent - got {:?} then {:?}", response, res);
-    //     }
-    // }
-
-    // time_sum /= 100;
-
-    Ok((time_sum, response))
 }
