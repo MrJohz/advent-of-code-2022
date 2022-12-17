@@ -143,20 +143,20 @@ fn task_runner(
 
     let mut time_sum = Duration::default();
 
-    for _ in 0..100 {
-        let start = time::Instant::now();
-        let res = f(input);
-        let end = start.elapsed();
-        time_sum += end;
+    // for _ in 0..100 {
+    //     let start = time::Instant::now();
+    //     let res = f(input);
+    //     let end = start.elapsed();
+    //     time_sum += end;
 
-        let res = res?;
+    //     let res = res?;
 
-        if res != response {
-            panic!("Task is inconsistent - got {:?} then {:?}", response, res);
-        }
-    }
+    //     if res != response {
+    //         panic!("Task is inconsistent - got {:?} then {:?}", response, res);
+    //     }
+    // }
 
-    time_sum /= 100;
+    // time_sum /= 100;
 
     Ok((time_sum, response))
 }

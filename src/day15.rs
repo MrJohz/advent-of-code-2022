@@ -1,7 +1,5 @@
 use std::cmp;
 
-use itertools::Itertools;
-
 pub struct Day15;
 
 fn parse(input: &str) -> impl Iterator<Item = ((i64, i64), (i64, i64))> + '_ {
@@ -41,7 +39,7 @@ fn manhatten(point1: (i64, i64), point2: (i64, i64)) -> i64 {
 
 impl crate::runner::Day for Day15 {
     fn part_1(input: &str) -> anyhow::Result<String> {
-        const Y_LEVEL: i64 = 2000000;
+        const Y_LEVEL: i64 = 2000000; //10;
         let mut smallest = i64::MAX;
         let mut largest = i64::MIN;
         let (mut sensors, beacons): (Vec<_>, Vec<_>) = parse(input)
@@ -49,42 +47,79 @@ impl crate::runner::Day for Day15 {
             .inspect(|((sensor, manhatten), _)| {
                 // we can definitely make this cleverer by reducing the manhatten distance down
                 // but let's save that for later if we need it
-                smallest = cmp::min(smallest, sensor.0 - manhatten);
-                largest = cmp::max(largest, sensor.0 + manhatten);
+                smallest = cmp::min(smallest, sensor.0 - manhatten + (Y_LEVEL - sensor.1).abs());
+                largest = cmp::max(largest, sensor.0 + manhatten - (Y_LEVEL - sensor.1).abs());
             })
             .unzip();
         sensors.sort_unstable_by_key(|(_, distance)| -distance);
 
         let mut found_count = 0;
-        'outer: for idx in smallest..=largest {
+        let mut idx = smallest;
+        'outer: while idx <= largest {
             for beacon in &beacons {
                 if *beacon == (idx, Y_LEVEL) {
+                    idx += 1;
                     continue 'outer;
                 }
             }
+
             for (sensor, distance_to_beacon) in &sensors {
                 if manhatten((idx, Y_LEVEL), *sensor) <= *distance_to_beacon {
-                    found_count += 1;
-                    break;
+                    let y_distance_to_sensor = (sensor.1 - Y_LEVEL).abs();
+                    let x_distance_to_sensor = sensor.0 - idx;
+                    let visible_along_x_axis = distance_to_beacon - y_distance_to_sensor;
+                    let skippable = cmp::max(x_distance_to_sensor + visible_along_x_axis, 1);
+                    idx += skippable;
+                    found_count += skippable;
+                    continue 'outer;
                 }
             }
+
+            idx += 1;
         }
 
         Ok(found_count.to_string())
     }
     fn expected_value_part_1() -> Option<&'static str> {
-        Some("672")
+        Some("5809294")
     }
 
     fn part_2(input: &str) -> anyhow::Result<String> {
-        // let mut slice = input.parse::<CaveSlice>().unwrap();
-        // slice.insert_floor();
-        // let mut sand_counts = 0;
-        // while slice.simulate_sand().is_some() {
-        //     sand_counts += 1;
-        // }
+        let (mut sensors, beacons): (Vec<_>, Vec<_>) = parse(input)
+            .map(|(sensor, beacon)| ((sensor, manhatten(sensor, beacon)), beacon))
+            .unzip();
+        sensors.sort_unstable_by_key(|(_, distance)| -distance);
 
-        Ok(0.to_string())
+        let mut found_position = None;
+        'y_loop: for y in 0..=4_000_000 {
+            let mut idx = 0;
+            'x_loop: while idx <= 4_000_000 {
+                for beacon in &beacons {
+                    if *beacon == (idx, y) {
+                        idx += 1;
+                        continue 'x_loop;
+                    }
+                }
+
+                for (sensor, distance_to_beacon) in &sensors {
+                    if manhatten((idx, y), *sensor) <= *distance_to_beacon {
+                        let y_distance_to_sensor = (sensor.1 - y).abs();
+                        let x_distance_to_sensor = sensor.0 - idx;
+                        let visible_along_x_axis = distance_to_beacon - y_distance_to_sensor;
+                        let skippable = cmp::max(x_distance_to_sensor + visible_along_x_axis, 1);
+                        idx += skippable;
+                        continue 'x_loop;
+                    }
+                }
+
+                found_position = Some((idx, y));
+                break 'y_loop;
+            }
+        }
+
+        let found_position = found_position.unwrap();
+
+        Ok((found_position.0 * 4_000_000 + found_position.1).to_string())
     }
     fn expected_value_part_2() -> Option<&'static str> {
         Some("26831")
